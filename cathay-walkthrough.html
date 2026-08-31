@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<title>Cathay Field Manual</title>
+<style>
+  :root{
+    --jade:#2E8B6E; --jade-soft:#4FB286;
+    --cinnabar:#B23A2E; --cinnabar-soft:#D9654F;
+    --gold:#C9A227; --gold-soft:#D4AF37;
+    --ink:#171512; --ink-2:#26201B;
+    --paper:#F4EFE3; --paper-2:#ECE4D2;
+    --stone:#5A5146; --stone-2:#8A7E6E;
+    --line:rgba(23,21,18,.14);
+    --card:#FBF7EC; --card-line:rgba(23,21,18,.1);
+    --shadow:0 18px 50px -24px rgba(23,21,18,.45);
+    --text:#211C16; --muted:#5A5146;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#0E0D0B; --ink-2:#171412;
+      --paper:#191613; --paper-2:#211D18;
+      --stone:#B4A88F; --stone-2:#8A7E6E;
+      --line:rgba(237,230,214,.14);
+      --card:#221E18; --card-line:rgba(237,230,214,.1);
+      --shadow:0 18px 50px -20px rgba(0,0,0,.7);
+      --text:#EDE6D6; --muted:#B4A88F;
+      --jade:#4FB286; --jade-soft:#6CC8A0;
+      --cinnabar:#D9654F; --cinnabar-soft:#E88A77;
+      --gold:#D4AF37; --gold-soft:#E4C55C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#0E0D0B; --ink-2:#171412;
+    --paper:#191613; --paper-2:#211D18;
+    --stone:#B4A88F; --stone-2:#8A7E6E;
+    --line:rgba(237,230,214,.14);
+    --card:#221E18; --card-line:rgba(237,230,214,.1);
+    --shadow:0 18px 50px -20px rgba(0,0,0,.7);
+    --text:#EDE6D6; --muted:#B4A88F;
+    --jade:#4FB286; --jade-soft:#6CC8A0;
+    --cinnabar:#D9654F; --cinnabar-soft:#E88A77;
+    --gold:#D4AF37; --gold-soft:#E4C55C;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--paper);
+    color:var(--text);
+    font-family:'Spectral',Georgia,serif;
+    font-size:17px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  .app{display:grid;grid-template-columns:230px 1fr;grid-template-rows:52px 1fr 72px;height:100vh}
+
+  /* top bar */
+  .topbar{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--line);background:var(--paper)}
+  .brand{display:flex;align-items:center;gap:11px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.06em;font-size:14px;text-transform:uppercase;color:var(--text)}
+  .yinyang{width:26px;height:26px;border-radius:50%;background:conic-gradient(var(--jade) 0 50%,var(--cinnabar) 50% 100%);position:relative;flex:0 0 auto}
+  .yinyang::before,.yinyang::after{content:"";position:absolute;width:50%;height:50%;border-radius:50%;left:25%}
+  .yinyang::before{top:0;background:var(--cinnabar)}
+  .yinyang::after{bottom:0;background:var(--jade)}
+  .yinyang i{position:absolute;width:16%;height:16%;border-radius:50%;left:42%;z-index:1}
+  .yinyang i:first-child{top:17%;background:var(--jade)}
+  .yinyang i:last-child{bottom:17%;background:var(--cinnabar)}
+  .progress{flex:1;display:flex;align-items:center;gap:14px}
+  .progress .track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden}
+  .progress .fill{height:100%;background:linear-gradient(90deg,var(--jade),var(--gold));width:0;transition:width .4s ease}
+  .progress .count{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;color:var(--muted);white-space:nowrap}
+
+  /* left rail */
+  .rail{grid-row:2;border-right:1px solid var(--line);padding:26px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+  .rail .sec{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:none;background:none;cursor:pointer;text-align:left;font-family:'Spectral',serif;font-size:15px;color:var(--muted);transition:background .15s,color .15s}
+  .rail .sec:hover{background:var(--card);color:var(--text)}
+  .rail .sec.active{background:var(--card);color:var(--text);box-shadow:inset 0 0 0 1px var(--card-line)}
+  .rail .sec .num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);width:16px;text-align:center;flex:0 0 auto}
+  .rail .sec.active .num{color:var(--jade)}
+
+  /* stage */
+  .stage{grid-row:2;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:34px 40px}
+  .slide{position:absolute;inset:0;padding:34px 48px;display:flex;flex-direction:column;max-width:880px;margin:0 auto;opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity .38s ease,transform .38s ease;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--stone-2) transparent}
+  .slide > :first-child{margin-top:auto}
+  .slide > :last-child{margin-bottom:auto}
+  .slide::-webkit-scrollbar{width:8px}
+  .slide::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+  .slide.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+  h1,h2,h3{font-family:'Cinzel',serif;color:var(--text);text-wrap:balance;margin:0}
+  h1{font-size:clamp(34px,5vw,56px);line-height:1.05;font-weight:700;letter-spacing:.01em}
+  h2{font-size:clamp(26px,3.4vw,40px);line-height:1.1;margin-bottom:18px;font-weight:700}
+  h3{font-size:18px;font-weight:600}
+  .lede{font-size:19px;color:var(--stone);max-width:56ch;margin:14px 0 0}
+  .muted{color:var(--muted)}
+  .accent{color:var(--jade)}
+  .accent.warm{color:var(--cinnabar)}
+
+  .grid{display:grid;gap:14px;margin-top:6px}
+  .grid.c2{grid-template-columns:1fr 1fr}
+  .grid.c3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--card);border:1px solid var(--card-line);border-radius:12px;padding:16px 18px;box-shadow:none}
+  .card h3{margin-bottom:6px;font-size:16px}
+  .card p{margin:0;font-size:15px;color:var(--muted)}
+  .tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-bottom:8px}
+  .tag.yin{background:color-mix(in srgb,var(--jade) 18%,transparent);color:var(--jade)}
+  .tag.yang{background:color-mix(in srgb,var(--cinnabar) 18%,transparent);color:var(--cinnabar)}
+  .tag.gold{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold)}
+
+  /* checklist */
+  .checklist{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .check{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--card-line);cursor:pointer;transition:background .15s}
+  .check:hover{background:var(--paper-2)}
+  .check input{display:none}
+  .check .box{width:20px;height:20px;border:2px solid var(--stone-2);border-radius:6px;flex:0 0 auto;margin-top:2px;display:grid;place-items:center;color:#fff;font-size:12px;transition:all .15s}
+  .check .box::after{content:"✓";opacity:0;transform:scale(.6);transition:all .15s}
+  .check input:checked ~ .box{background:var(--jade);border-color:var(--jade)}
+  .check input:checked ~ .box::after{opacity:1;transform:scale(1)}
+  .check .txt{font-size:15.5px;color:var(--text)}
+  .check .txt b{color:var(--text)}
+  .check input:checked ~ .txt{color:var(--muted);text-decoration:line-through}
+  .check .n{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);padding-top:3px;width:22px;flex:0 0 auto}
+
+  /* formation diagram */
+  .formation{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+  .frow{display:flex;gap:8px;justify-content:center}
+  .frow .unit{background:var(--card);border:1px solid var(--card-line);border-radius:8px;padding:8px 14px;font-size:14px;text-align:center;min-width:120px}
+  .frow .unit small{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .frow .unit.yang{border-color:color-mix(in srgb,var(--cinnabar) 45%,transparent)}
+  .frow .unit.yin{border-color:color-mix(in srgb,var(--jade) 45%,transparent)}
+  .frow .unit.gold{border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
+  .flow{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--stone-2);letter-spacing:.1em;margin:2px 0}
+
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+  ol.steps li{display:flex;gap:14px;align-items:flex-start;counter-increment:s}
+  ol.steps li::before{content:counter(s);font-family:'IBM Plex Mono',monospace;color:var(--gold);font-size:14px;border:1px solid var(--line);border-radius:8px;width:28px;height:28px;display:grid;place-items:center;flex:0 0 auto;margin-top:2px}
+  ol.steps li b{color:var(--text)}
+  ol.steps li{font-size:15.5px;color:var(--stone)}
+
+  .warn-list{display:flex;flex-direction:column;gap:8px}
+  .warn{display:flex;gap:11px;padding:11px 14px;border-radius:10px;border:1px solid color-mix(in srgb,var(--cinnabar) 30%,transparent);background:color-mix(in srgb,var(--cinnabar) 7%,transparent);font-size:15px}
+  .warn .ic{color:var(--cinnabar);flex:0 0 auto}
+  .warn b{color:var(--text)}
+
+  /* footer nav */
+  .nav{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-top:1px solid var(--line);background:var(--paper)}
+  .nav .dots{display:flex;gap:7px}
+  .nav .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:none;cursor:pointer;transition:all .2s}
+  .nav .dot.active{background:var(--gold);transform:scale(1.35)}
+  .nav button.arrow{font-family:'Spectral',serif;font-size:15px;padding:9px 20px;border-radius:9px;border:1px solid var(--card-line);background:var(--card);color:var(--text);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+  .nav button.arrow:hover{background:var(--paper-2)}
+  .nav button.arrow:disabled{opacity:.35;cursor:default}
+  .nav button.arrow.primary{background:var(--jade);border-color:var(--jade);color:#fff;font-weight:600}
+  .nav button.arrow.primary:hover{background:var(--jade-soft)}
+  kbd{font-family:'IBM Plex Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--muted);margin-left:6px}
+
+  @media (max-width:820px){
+    .app{grid-template-columns:1fr;grid-template-rows:52px 1fr 72px}
+    .rail{display:none}
+    .slide{padding:24px}
+    .grid.c2,.grid.c3{grid-template-columns:1fr}
+    body{overflow:hidden}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .slide{transition:none}
+    *{transition:none !important}
+  }
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="yinyang"><i></i><i></i></span> Cathay Field Manual</div>
+    <div class="progress">
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <span class="count" id="count">1 / 7</span>
+    </div>
+  </header>
+
+  <nav class="rail" id="rail"></nav>
+
+  <main class="stage" id="stage">
+
+    <section class="slide" data-title="Cover">
+      <p class="eyebrow">Total War: Warhammer III · Grand Cathay · Beginner Primer</p>
+      <h1>Hold the wall.<br>Balance the scales.<br>Let them die on your guns.</h1>
+      <p class="lede">Grand Cathay is an empire of dragons, magic, and one very big wall. You win by standing still — shooters behind a line of spears, two meters kept in balance, and a caravan of gold rolling west every turn.</p>
+      <p class="muted" style="margin-top:18px">Recommended starter: <b class="accent">Miao Ying, the Storm Dragon</b> — defensive, missile-heavy, forgiving. Press <b>→</b> or <b>Begin</b> to start.</p>
+    </section>
+
+    <section class="slide" data-title="Quick Start">
+      <h2>Your first ten turns</h2>
+      <p class="muted" style="margin-top:-8px;margin-bottom:6px">Tap each one off as you do it. Progress saves in your browser.</p>
+      <div class="checklist" id="checklist"></div>
+    </section>
+
+    <section class="slide" data-title="Mechanics">
+      <h2>The four mechanics, plainly</h2>
+      <div class="grid c2">
+        <div class="card"><span class="tag yin">Yin / Yang</span><h3>Harmony</h3><p>Every unit, building and tech is <b>Yin</b> (mostly ranged) or <b>Yang</b> (mostly melee). Keep them balanced on the campaign map for big bonuses; in battle, a Yin and Yang unit next to each other buff each other. Balance is the whole skill.</p></div>
+        <div class="card"><span class="tag gold">Defense</span><h3>The Great Bastion</h3><p>Your northern wall, hit by Chaos raiders from turn one. Build its garrisons and the gates hold themselves — no army needed. Its upkeep chain can cut garrisoned-army costs by up to 90%.</p></div>
+        <div class="card"><span class="tag gold">Income</span><h3>Ivory Road caravans</h3><p>Send trade caravans west to earn money — your main income engine. Each run rolls random events; a bad dilemma choice can destroy the caravan. Send early, keep them moving.</p></div>
+        <div class="card"><span class="tag gold">Tool</span><h3>Wu-Xing Compass</h3><p>A magic compass pointing one of four ways for a faction-wide bonus: money, growth, military, or control. Point it at whatever you need this turn, and hold the direction to fill its meter for a bigger payoff.</p></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Army">
+      <h2>Your army is a turtle</h2>
+      <p class="muted" style="margin-top:-8px">Cathay units are weak alone — the Harmony buff from a Yin unit standing beside a Yang unit is what makes them work. Plant the line and let the enemy come to you.</p>
+      <div class="formation">
+        <div class="frow">
+          <div class="unit yang">Jade Warrior Halberds<small>Yang · front line</small></div>
+          <div class="unit yang">Jade Warrior Halberds<small>Yang · front line</small></div>
+        </div>
+        <div class="flow">▼ hold still — armor &amp; charge resist build up ▼</div>
+        <div class="frow">
+          <div class="unit yin">Jade Crossbowmen (Shields)<small>Yin · damage</small></div>
+          <div class="unit yin">Jade Crossbowmen (Shields)<small>Yin · damage</small></div>
+        </div>
+        <div class="flow">▼ behind, safe ▼</div>
+        <div class="frow">
+          <div class="unit gold">Grand Cannons ×2<small>artillery · snipe monsters</small></div>
+        </div>
+      </div>
+      <div class="grid c3" style="margin-top:16px">
+        <div class="card"><h3>Upgrade into</h3><p>Celestial Dragon Guard + Celestial Dragon Crossbowmen, Crane Gunners, Terracotta Sentinels.</p></div>
+        <div class="card"><h3>Always bring</h3><p>2+ spellcasters — each extra caster boosts all your spells +15%, stacking to +100%.</p></div>
+        <div class="card"><h3>Never build</h3><p>Cavalry. Cathay has the worst cavalry in the game. Guns, artillery and monsters win.</p></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Buildings">
+      <h2>What to build first</h2>
+      <ol class="steps" style="margin-top:6px">
+        <li><span><b>Growth building</b> first, and point the Compass at Growth — level up faster.</span></li>
+        <li><span><b>Bastion gate garrison</b> on the wall — the single most important early investment.</span></li>
+        <li><span><b>Balance buildings:</b> first tier of one Yin and one Yang building. First tier only — you get the balance point without overbuilding.</span></li>
+        <li><span><b>Income buildings</b> (tax / industry) once growth is rolling.</span></li>
+        <li><span><b>Tier-3 defense building</b> in every province — stops Chaos Rifts from spawning in your land.</span></li>
+        <li><span>At the gates, the <b>upkeep-reduction chain</b> — your northern defense runs itself.</span></li>
+        <li><span>In 8.0, tech into the <b>Provinces branch</b> for tax, income and diplomacy.</span></li>
+      </ol>
+      <p class="muted" style="margin-top:14px">Economy = <b>caravans + confederating Cathay provinces + balanced Harmony</b>. Don't neglect any of the three.</p>
+    </section>
+
+    <section class="slide" data-title="Mistakes">
+      <h2>Don't make these mistakes</h2>
+      <div class="warn-list" style="margin-top:6px">
+        <div class="warn"><span class="ic">⚠</span><span><b>Letting Yin and Yang fight apart</b> — a split army is an un-buffed, weak army. Keep the turtle tight.</span></div>
+        <div class="warn"><span class="ic">⚠</span><span><b>…but packing too tight</b> — clustering invites enemy vortex and wind spells. Close for Harmony, spread enough that one spell doesn't hit everything.</span></div>
+        <div class="warn"><span class="ic">⚠</span><span><b>Moving your Jade units</b> — they get armor and charge resistance for standing still. Let the enemy advance into you.</span></div>
+        <div class="warn"><span class="ic">⚠</span><span><b>Tilting the Harmony meter</b> — trade faction bonuses for penalties. Alternate Yin/Yang picks, keep a free slot to rebalance.</span></div>
+        <div class="warn"><span class="ic">⚠</span><span><b>Sending a caravan without reading the dilemma</b> — one bad choice destroys the caravan and your income.</span></div>
+        <div class="warn"><span class="ic">⚠</span><span><b>Keeping Peasants too long</b> — they're fodder, not a line. Swap to Jade Warriors and Celestial Guard as soon as you can afford it.</span></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Patch 8.0">
+      <h2>What patch 8.0 changed</h2>
+      <p class="muted" style="margin-top:-8px">Most guides were written before the 8.0 rework. Here's what's different now.</p>
+      <div class="grid c2" style="margin-top:8px">
+        <div class="card"><span class="tag yang">Changed</span><h3>Tech tree split</h3><p>Now two branches: <b>Military</b> (units, combat) and <b>Provinces</b> (buildings, taxes, income). Pick your direction on turn one and commit.</p></div>
+        <div class="card"><span class="tag yang">Changed</span><h3>Harmony is local</h3><p>No longer one empire-wide meter. Balance each province/region instead of chasing one global number.</p></div>
+        <div class="card"><span class="tag yang">Changed</span><h3>Sky Lanterns</h3><p>No longer snipers — they're now infantry-disruption units. Fly them into formations to break them up.</p></div>
+        <div class="card"><span class="tag gold">New</span><h3>Bhashiva &amp; Taoyan</h3><p>New lord <b>Bhashiva</b> plays ambush/harassment with exclusive Tiger Warriors. Free hero <b>Taoyan the Merciless</b> unlocks for any lord at rank 12.</p></div>
+      </div>
+      <p class="muted" style="margin-top:18px">Everything else holds: caravans, the Compass, Bastion garrisons, battle Harmony, and 2+ casters per army.</p>
+    </section>
+
+  </main>
+
+  <footer class="nav">
+    <button class="arrow" id="prev">← <span>Back</span></button>
+    <div class="dots" id="dots"></div>
+    <button class="arrow primary" id="next"><span>Next</span> →</button>
+  </footer>
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const rail = document.getElementById('rail');
+  const dots = document.getElementById('dots');
+  const fill = document.getElementById('fill');
+  const count = document.getElementById('count');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  let cur = 0;
+
+  const QUICK = [
+    {b:'Turn 1 — send a caravan.', t:'Open the Ivory Road, pick a Caravan Master and a destination west. This is your money engine.'},
+    {b:'Point the Wu-Xing Compass at Growth.', t:'Check it each turn — early growth speeds up settlements and the Bastion.'},
+    {b:'Build the Bastion gate garrisons.', t:'So the gates hold the north themselves and you keep your army free.'},
+    {b:'Balance Harmony from day one.', t:'Alternate Yin and Yang. Keep one building slot free to rebalance; recruiting then disbanding a hero nudges the meter too.'},
+    {b:'Unite Cathay first.', t:'Beat the rebel factions, confederate the loyalists — the biggest single income jump.'},
+    {b:'Build a missile army.', t:'Jade Warrior Crossbowmen + Grand Cannons. Early enemies have poor armor.'},
+    {b:'Take Shielded crossbowmen.', t:'The shields let them tank enemy fire much better than the plain variant.'},
+    {b:'Pick your 8.0 tech branch now.', t:'Military or Provinces — decide turn one and commit, don’t skip around.'},
+    {b:'Push a lord to rank 12.', t:'Unlocks the free legendary hero Taoyan the Merciless. Don’t miss him.'},
+    {b:'Don’t overextend.', t:'Hold home ground, let the Bastion handle the north, expand slowly.'}
+  ];
+
+  const checklist = document.getElementById('checklist');
+  const store = (() => { try { return JSON.parse(localStorage.getItem('cathay-check')||'[]'); } catch { return []; } })();
+  QUICK.forEach((q,i)=>{
+    const label = document.createElement('label');
+    label.className = 'check';
+    label.innerHTML = `<span class="n">${i+1}</span><input type="checkbox" ${store[i]?'checked':''}><span class="box"></span><span class="txt"><b>${q.b}</b> ${q.t}</span>`;
+    label.querySelector('input').addEventListener('change', e=>{
+      const s = JSON.parse(localStorage.getItem('cathay-check')||'[]'); s[i]=e.target.checked;
+      localStorage.setItem('cathay-check', JSON.stringify(s));
+    });
+    checklist.appendChild(label);
+  });
+
+  slides.forEach((s,i)=>{
+    const railBtn = document.createElement('button');
+    railBtn.className = 'sec';
+    railBtn.innerHTML = `<span class="num">${String(i+1).padStart(2,'0')}</span> ${s.dataset.title}`;
+    railBtn.onclick = ()=>go(i);
+    rail.appendChild(railBtn);
+    const dot = document.createElement('button');
+    dot.className = 'dot';
+    dot.setAttribute('aria-label', s.dataset.title);
+    dot.onclick = ()=>go(i);
+    dots.appendChild(dot);
+  });
+
+  function go(i){
+    cur = (i + slides.length) % slides.length;
+    slides.forEach((s,j)=>s.classList.toggle('visible', j===cur));
+    [...rail.children].forEach((b,j)=>b.classList.toggle('active', j===cur));
+    [...dots.children].forEach((d,j)=>d.classList.toggle('active', j===cur));
+    fill.style.width = ((cur+1)/slides.length*100)+'%';
+    count.textContent = (cur+1)+' / '+slides.length;
+    prev.disabled = cur===0;
+    next.firstChild.textContent = cur===slides.length-1 ? 'Finish' : 'Next';
+  }
+  prev.onclick = ()=>go(cur-1);
+  next.onclick = ()=>go(cur+1);
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' ') go(cur+1);
+    if(e.key==='ArrowLeft') go(cur-1);
+  });
+  go(0);
+</script>
